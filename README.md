@@ -25,6 +25,14 @@ Starts the project in dev mode with mocked API on local environment.
 
 Builds the project for production in `dist` folder.
 
+### `deploy`
+
+Builds the app, deploys infrastructure and static assets to S3 using AWS CDK, and invalidates CloudFront cache.
+
+### `cdk:destroy`
+
+Destroys AWS infrastructure created by CDK (including S3 bucket and CloudFront distribution).
+
 ### `preview`
 
 Starts the project in production mode on local environment.
@@ -36,3 +44,18 @@ Runs tests in console, in browser or with coverage.
 ### `lint`, `prettier`
 
 Runs linting and formatting for all files in `src` folder.
+
+## How to Deploy
+
+1. Install dependencies in project root and in infrastructure folder.
+2. Make sure AWS CLI credentials are configured for your target account.
+3. Run:
+
+	`npm run deploy`
+
+This command builds the app, deploys to S3/CloudFront using CDK, and invalidates the CloudFront cache.
+
+## Deployment Links
+
+- CloudFront URL: https://d2z9jj0dwpmt38.cloudfront.net
+- S3 website URL: https://infrastructurestack-spabucket48e1059f-elgjgvelxdzs.s3.eu-north-1.amazonaws.com/index.html
