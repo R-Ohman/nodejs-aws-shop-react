@@ -13,19 +13,25 @@ export class ProductServiceStack extends cdk.Stack {
     const backendPath = path.resolve(process.cwd(), '../../nodejs-aws-shop-backend/dist');
 
     const getProductsListFn = new lambda.Function(this, 'GetProductsListFunction', {
-      runtime: lambda.Runtime.NODEJS_18_X,
+      runtime: lambda.Runtime.NODEJS_24_X,
       handler: 'handlers/getProductsList.handler',
       code: lambda.Code.fromAsset(backendPath),
       memorySize: 128,
       timeout: cdk.Duration.seconds(10),
+      environment: {
+        ALLOWED_ORIGIN: process.env.ALLOWED_ORIGIN || '*',
+      },
     });
 
     const getProductByIdFn = new lambda.Function(this, 'GetProductByIdFunction', {
-      runtime: lambda.Runtime.NODEJS_18_X,
+      runtime: lambda.Runtime.NODEJS_24_X,
       handler: 'handlers/getProductById.handler',
       code: lambda.Code.fromAsset(backendPath),
       memorySize: 128,
       timeout: cdk.Duration.seconds(10),
+      environment: {
+        ALLOWED_ORIGIN: process.env.ALLOWED_ORIGIN || '*',
+      },
     });
 
     this.restApi = new apigateway.RestApi(this, 'ProductApi', {
