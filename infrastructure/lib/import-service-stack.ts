@@ -4,6 +4,7 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as s3n from 'aws-cdk-lib/aws-s3-notifications';
+import * as cr from 'aws-cdk-lib/custom-resources';
 import * as path from 'path';
 
 export class ImportServiceStack extends cdk.Stack {
@@ -12,14 +13,62 @@ export class ImportServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const backendPath = path.resolve(process.cwd(), '../../nodejs-aws-shop-backend/dist');
+    const backendPath = path.resolve(process.cwd(), '../../nodejs-aws-shop-backend');
     const bucketName = 'rss-import-275956877398';
+    const allowedOrigins = (process.env.ALLOWED_ORIGIN || '*')
+      .split(',')
+      .map((origin) => origin.trim())
+      .filter(Boolean);
 
     const bucket = s3.Bucket.fromBucketName(this, 'ImportBucket', bucketName);
 
+    new cr.AwsCustomResource(this, 'ImportBucketCors', {
+      onCreate: {
+        service: 'S3',
+        action: 'putBucketCors',
+        parameters: {
+          Bucket: bucketName,
+          CORSConfiguration: {
+            CORSRules: [
+              {
+                AllowedHeaders: ['*'],
+                AllowedMethods: ['PUT', 'GET', 'HEAD'],
+                AllowedOrigins: allowedOrigins,
+                ExposeHeaders: ['ETag'],
+                MaxAgeSeconds: 3000,
+              },
+            ],
+          },
+        },
+        physicalResourceId: cr.PhysicalResourceId.of(`import-bucket-cors-${bucketName}`),
+      },
+      onUpdate: {
+        service: 'S3',
+        action: 'putBucketCors',
+        parameters: {
+          Bucket: bucketName,
+          CORSConfiguration: {
+            CORSRules: [
+              {
+                AllowedHeaders: ['*'],
+                AllowedMethods: ['PUT', 'GET', 'HEAD'],
+                AllowedOrigins: allowedOrigins,
+                ExposeHeaders: ['ETag'],
+                MaxAgeSeconds: 3000,
+              },
+            ],
+          },
+        },
+        physicalResourceId: cr.PhysicalResourceId.of(`import-bucket-cors-${bucketName}`),
+      },
+      policy: cr.AwsCustomResourcePolicy.fromSdkCalls({
+        resources: [`arn:aws:s3:::${bucketName}`],
+      }),
+    });
+
     const importProductsFileFn = new lambda.Function(this, 'ImportProductsFileFunction', {
       runtime: lambda.Runtime.NODEJS_24_X,
-      handler: 'handlers/importProductsFile.handler',
+      handler: 'dist/handlers/importProductsFile.handler',
       code: lambda.Code.fromAsset(backendPath),
       memorySize: 128,
       timeout: cdk.Duration.seconds(10),
@@ -31,7 +80,7 @@ export class ImportServiceStack extends cdk.Stack {
 
     const importFileParserFn = new lambda.Function(this, 'ImportFileParserFunction', {
       runtime: lambda.Runtime.NODEJS_24_X,
-      handler: 'handlers/importFileParser.handler',
+      handler: 'dist/handlers/importFileParser.handler',
       code: lambda.Code.fromAsset(backendPath),
       memorySize: 128,
       timeout: cdk.Duration.seconds(10),
