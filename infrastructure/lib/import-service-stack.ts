@@ -4,13 +4,18 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as s3n from 'aws-cdk-lib/aws-s3-notifications';
+import * as sqs from 'aws-cdk-lib/aws-sqs';
 import * as cr from 'aws-cdk-lib/custom-resources';
 import * as path from 'path';
+
+interface ImportServiceStackProps extends cdk.StackProps {
+  catalogItemsQueue: sqs.IQueue;
+}
 
 export class ImportServiceStack extends cdk.Stack {
   public readonly restApi: apigateway.RestApi;
 
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props: ImportServiceStackProps) {
     super(scope, id, props);
 
     const backendPath = path.resolve(process.cwd(), '../../nodejs-aws-shop-backend');
@@ -86,11 +91,13 @@ export class ImportServiceStack extends cdk.Stack {
       timeout: cdk.Duration.seconds(10),
       environment: {
         BUCKET_NAME: bucketName,
+        CATALOG_ITEMS_QUEUE_URL: props.catalogItemsQueue.queueUrl,
       },
     });
 
     bucket.grantPut(importProductsFileFn);
     bucket.grantReadWrite(importFileParserFn);
+    props.catalogItemsQueue.grantSendMessages(importFileParserFn);
 
     this.restApi = new apigateway.RestApi(this, 'ImportApi', {
       restApiName: 'Import Service API',
