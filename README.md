@@ -27,7 +27,7 @@ Builds the project for production in `dist` folder.
 
 ### `deploy`
 
-Builds the app, deploys infrastructure and static assets to S3 using AWS CDK, and invalidates CloudFront cache.
+Builds the app, deploys the frontend infrastructure and static assets to S3 using AWS CDK, and invalidates CloudFront cache.
 
 ### `cdk:destroy`
 
@@ -53,7 +53,7 @@ Runs linting and formatting for all files in `src` folder.
 
 	`npm run deploy`
 
-This command builds the app, deploys to S3/CloudFront using CDK, and invalidates the CloudFront cache.
+This command builds the app, deploys the frontend stack to S3/CloudFront using CDK, and invalidates the CloudFront cache.
 
 ## Deployment Links
 
