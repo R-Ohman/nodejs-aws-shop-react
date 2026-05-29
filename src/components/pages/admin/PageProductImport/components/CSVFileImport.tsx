@@ -36,6 +36,9 @@ export default function CSVFileImport({ url, title }: CSVFileImportProps) {
         params: {
           name: file.name,
         },
+        headers: {
+          Authorization: `Basic ${localStorage.getItem('authorization_token')}`,
+        },
       });
 
       const uploadResponse = await fetch(response.data, {
