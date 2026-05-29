@@ -10,8 +10,10 @@
     "cdk": "cdk"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "^24.10.1",
     "aws-cdk": "2.1118.2",
+    "dotenv": "^16.4.7",
     "ts-node": "^10.9.2",
     "typescript": "~5.9.3"
   },
