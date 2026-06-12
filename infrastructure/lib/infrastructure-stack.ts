@@ -51,7 +51,7 @@ export class InfrastructureStack extends cdk.Stack {
     });
 
     new s3deploy.BucketDeployment(this, 'DeployWebsite', {
-      sources: [s3deploy.Source.asset(path.join(__dirname, '../../dist'))],
+      sources: [s3deploy.Source.asset(path.resolve(process.cwd(), '../dist'))],
       destinationBucket: this.bucket,
       distribution: this.distribution,
       distributionPaths: ['/*'],
